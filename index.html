@@ -3,121 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Harshit · Terminal Portfolio</title>
-  <link rel="preconnect" href="https://unpkg.com" crossorigin />
+  <title>ureshii7 · Terminal Portfolio</title>
   <link rel="stylesheet" href="https://unpkg.com/xterm/css/xterm.css" />
   <style>
-    :root {
-      --bg: #0b0f10;        /* hacker dark */
-      --fg: #c9d1d9;
-      --cursor: #22c55e;    /* green */
-      --accent: #22c55e;
-      --muted: #7d8590;
-      --term-radius: 14px;
-      --term-shadow: 0 10px 40px rgba(0,0,0,.5);
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #000;
+      color: #fff;
+      font-family: monospace;
     }
-    [data-theme="light"]{
-      --bg: #f6f8fa;
-      --fg: #24292f;
-      --cursor: #0ea5e9;
-      --accent: #0ea5e9;
-      --muted: #57606a;
+    #terminal {
+      width: 100%;
+      height: 100%;
     }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0; background: linear-gradient(180deg, var(--bg), #000000);
-      color: var(--fg); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      display: grid; place-items: center;
-    }
-    .wrap {
-      width: min(1100px, 92vw); height: min(720px, 86vh);
-      background: #000; border-radius: var(--term-radius); box-shadow: var(--term-shadow);
-      border: 1px solid rgba(255,255,255,.06);
-      overflow: hidden; display: grid; grid-template-rows: auto 1fr; 
-    }
-    .titlebar {
-      display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: rgba(255,255,255,.04);
-      border-bottom: 1px solid rgba(255,255,255,.06);
-    }
-    .dots { display:flex; gap:8px; }
-    .dot { width:12px; height:12px; border-radius:50%; }
-    .dot.red{ background:#ff5f56; }
-    .dot.yellow{ background:#ffbd2e; }
-    .dot.green{ background:#27c93f; }
-    .titlebar .title { margin-left: 6px; color: var(--muted); font-size: 12px; }
-    #terminal { width: 100%; height: 100%; }
-    .footer { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); color: var(--muted); font-size: 12px; opacity: .7; }
-    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 1, 1); white-space: nowrap; border: 0; }
   </style>
 </head>
 <body>
-  <div class="wrap" id="app" data-theme="dark">
-    <div class="titlebar">
-      <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
-      <span class="title">Harshit — Terminal Portfolio</span>
-    </div>
-    <div id="terminal" aria-label="Interactive terminal portfolio" role="region"></div>
-  </div>
-  <p class="footer">Tip: type <kbd>help</kbd> • <kbd>↑/↓</kbd> for history • <kbd>Tab</kbd> to autocomplete • <kbd>Ctrl</kbd>+<kbd>L</kbd> to clear</p>
+  <div id="terminal"></div>
 
-  <!-- xterm core + addons from CDN (works on GitHub Pages) -->
   <script src="https://unpkg.com/xterm/lib/xterm.js"></script>
   <script src="https://unpkg.com/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
   <script src="https://unpkg.com/xterm-addon-web-links/lib/xterm-addon-web-links.js"></script>
 
   <script>
-    // ======== CONFIG: personalize your portfolio here ========
     const PROFILE = {
       username: 'harshit',
       hostname: 'portfolio',
       home: '/home/harshit',
-      banner: true,
-      // Shown by the `about` command
-      about: `Hey, I'm Harshit — I build playful, performant web things.\nI enjoy TypeScript, Node.js, and shipping delightful UIs.`,
-      contact: {
-        email: 'harshit@example.com',
-        github: 'https://github.com/yourusername',
-        linkedin: 'https://www.linkedin.com/in/yourusername/',
-        twitter: 'https://twitter.com/yourhandle'
-      },
-      projects: [
-        { name: 'termx-portfolio', desc: 'This terminal-style portfolio', url: 'https://github.com/yourusername/termx-portfolio' },
-        { name: 'cool-app', desc: 'Realtime collab whiteboard', url: 'https://github.com/yourusername/cool-app' },
-        { name: 'viz-kit', desc: 'Tiny charts toolkit', url: 'https://github.com/yourusername/viz-kit' }
-      ]
+      about: `Hey, I'm Harshit — I build playful, performant web things.`,
+      projects: [],
     };
 
-    // Fake filesystem (folders & files). You can add nested dirs.
-    const FS = {
-      '/': { type: 'dir', children: { 'home': { type: 'dir', children: {} } } },
-      '/home': { type: 'dir', children: { 'harshit': { type: 'dir', children: {} } } },
-      '/home/harshit': { type: 'dir', children: {
-        'about.txt': { type: 'file', content: PROFILE.about },
-        'contact.txt': { type: 'file', content: `Email: ${PROFILE.contact.email}\nGitHub: ${PROFILE.contact.github}\nLinkedIn: ${PROFILE.contact.linkedin}` },
-        'README.md': { type: 'file', content: '# Welcome to my terminal portfolio\nType `help` to get started.' },
-        'projects': { type: 'dir', children: {} }
-      } },
-    };
-
-    // Build project files inside ~/projects
-    (function seedProjects(){
-      const pdir = pathJoin(PROFILE.home, 'projects');
-      FS[pdir] = FS[pdir] || { type:'dir', children:{} };
-      PROFILE.projects.forEach(p => {
-        FS[pdir].children[p.name] = { type:'file', content: `${p.name}\n${p.desc}\n${p.url}` };
-      });
-    })();
-
-    // ======== Terminal setup ========
     const term = new Terminal({
       cursorBlink: true,
-      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace',
       fontSize: 14,
-      theme: { background: '#000000', foreground: '#c9d1d9', cursor: getComputedStyle(document.documentElement).getPropertyValue('--cursor').trim() },
-      allowProposedApi: true,
-      rightClickSelectsWord: true,
-      scrollback: 2000,
+      theme: {
+        background: '#000000',
+        foreground: '#e5e5e5',
+        cursor: '#00ff00'
+      }
     });
 
     const fitAddon = new FitAddon.FitAddon();
@@ -127,273 +53,96 @@
 
     term.open(document.getElementById('terminal'));
     fitAddon.fit();
-    window.addEventListener('resize', () => fitAddon.fit());
 
-    // State
-    let CWD = PROFILE.home;           // current working directory
     let input = '';
     let history = [];
     let histIndex = -1;
 
-    // Helper: prompt string
-    function promptStr(){
-      const rel = CWD.startsWith(PROFILE.home) ? CWD.replace(PROFILE.home, '~') : CWD;
-      return `\x1b[38;2;34;197;94m${PROFILE.username}\x1b[0m@\x1b[38;2;34;197;94m${PROFILE.hostname}\x1b[0m:${rel}$ `;
+    function promptStr() {
+      return `\r\n\x1b[32m${PROFILE.username}@${PROFILE.hostname}\x1b[0m:~$ `;
     }
 
-    function printPrompt(){ term.write(`\r\n${promptStr()}`); }
-
-    // Path helpers
-    function pathJoin(base, seg){
-      if (seg.startsWith('/')) return normalize(seg);
-      if (seg === '~') return PROFILE.home;
-      return normalize((base + '/' + seg).replace(/\/+/g,'/'));
-    }
-    function normalize(p){
-      const parts = p.split('/');
-      const out = [];
-      for (const part of parts){
-        if (!part || part === '.') continue;
-        if (part === '..') out.pop(); else out.push(part);
-      }
-      return '/' + out.join('/');
-    }
-    function getNode(p){ return FS[p]; }
-    function ensureDir(p){ const n = getNode(p); return n && n.type === 'dir' ? n : null; }
-
-    // Auto-complete for commands & files
-    const COMMANDS = ['help','about','whoami','contact','projects','ls','cat','pwd','cd','tree','echo','clear','theme','banner','open','neofetch','date'];
-    function autocomplete(token){
-      // if token contains space, try file/dir completion in CWD
-      const [cmd, ...rest] = input.trim().split(/\s+/);
-      if (!rest.length){
-        const matches = COMMANDS.filter(c => c.startsWith(token));
-        return matches;
-      } else {
-        const needle = token;
-        const dir = ensureDir(CWD);
-        if (!dir) return [];
-        const names = Object.keys(dir.children || {});
-        return names.filter(n => n.startsWith(needle));
-      }
+    function writeln(text = '') {
+      term.write(`\r\n${text}`);
     }
 
-    // Rendering helpers
-    function writeln(text=''){ term.write(`\r\n${text}`); }
-    function write(text=''){ term.write(text); }
-
-    // Pretty list
-    function listDir(path){
-      const dir = ensureDir(path);
-      if (!dir){ writeln(`ls: cannot access '${path}': Not a directory`); return; }
-      const names = Object.keys(dir.children || {});
-      if (!names.length){ writeln(''); return; }
-      // columns
-      const cols = Math.max(1, Math.floor(term.cols / 20));
-      let row = '';
-      names.sort().forEach((name, i) => {
-        const n = dir.children[name];
-        const suffix = n.type === 'dir' ? '/' : '';
-        const padded = (name + suffix).padEnd(18, ' ');
-        row += padded + '  ';
-        if ((i+1) % cols === 0){ writeln(row); row = ''; }
-      });
-      if (row) writeln(row);
-    }
-
-    function tree(path, prefix=''){ // simple tree
-      const dir = ensureDir(path);
-      if (!dir){ writeln(`${path}`); return; }
-      const entries = Object.entries(dir.children || {}).sort(([a],[b])=>a.localeCompare(b));
-      entries.forEach(([name, node], idx) => {
-        const isLast = idx === entries.length - 1;
-        const branch = prefix + (isLast ? '└── ' : '├── ');
-        writeln(branch + name + (node.type === 'dir' ? '/' : ''));
-        if (node.type === 'dir') tree(pathJoin(path, name), prefix + (isLast ? '    ' : '│   '));
-      });
-    }
-
-    // Commands implementation
     const handlers = {
-      help(){
-        writeln('Commands:');
-        writeln('  about       whoami       contact');
-        writeln('  projects    open <name|url>');
-        writeln('  ls [dir]    cat <file>   tree');
-        writeln('  cd <dir>    pwd          echo');
-        writeln('  clear       theme <dark|light|hacker>');
-        writeln('  banner <on|off>  neofetch  date');
+      help() {
+        writeln('help  about  clear  neofetch');
       },
-      about(){ writeln(PROFILE.about); },
-      whoami(){ writeln(PROFILE.username); },
-      contact(){
-        writeln(`Email   : ${PROFILE.contact.email}`);
-        writeln(`GitHub  : ${PROFILE.contact.github}`);
-        writeln(`LinkedIn: ${PROFILE.contact.linkedin}`);
-        if (PROFILE.contact.twitter) writeln(`Twitter : ${PROFILE.contact.twitter}`);
+      about() {
+        writeln(PROFILE.about);
       },
-      projects(){
-        if (!PROFILE.projects.length){ writeln('No projects yet.'); return; }
-        PROFILE.projects.forEach((p,i)=>{
-          writeln(`${i+1}. ${p.name} — ${p.desc}`);
-          writeln(`    ${p.url}`);
-        });
-        writeln('Tip: use `open <name>` to open a project.');
+      clear() {
+        term.clear();
       },
-      open(arg){
-        if (!arg){ writeln('open: missing argument'); return; }
-        // Match by project name first
-        const p = PROFILE.projects.find(x => x.name.toLowerCase() === arg.toLowerCase());
-        const url = p ? p.url : (/^https?:\/\//.test(arg) ? arg : null);
-        if (!url){ writeln(`open: not found: ${arg}`); return; }
-        window.open(url, '_blank');
-        writeln(`Opened: ${url}`);
-      },
-      ls(arg){ listDir(arg ? pathJoin(CWD, arg) : CWD); },
-      tree(arg){ tree(arg ? pathJoin(CWD, arg) : CWD); },
-      cat(arg){
-        if (!arg){ writeln('cat: missing file'); return; }
-        const p = pathJoin(CWD, arg);
-        const node = FS[p];
-        if (!node) return writeln(`cat: ${arg}: No such file`);
-        if (node.type !== 'file') return writeln(`cat: ${arg}: Is a directory`);
-        writeln(node.content);
-      },
-      cd(arg){
-        if (!arg) { CWD = PROFILE.home; return; }
-        let target = arg === '~' ? PROFILE.home : pathJoin(CWD, arg);
-        const node = FS[target];
-        if (!node) return writeln(`cd: ${arg}: No such file or directory`);
-        if (node.type !== 'dir') return writeln(`cd: ${arg}: Not a directory`);
-        CWD = normalize(target);
-      },
-      pwd(){ writeln(CWD); },
-      echo(...args){ writeln(args.join(' ')); },
-      clear(){ term.clear(); },
-      theme(arg){
-        const root = document.getElementById('app');
-        if (!arg || !['dark','light','hacker'].includes(arg)){
-          writeln('Usage: theme <dark|light|hacker>'); return;
-        }
-        root.dataset.theme = arg === 'light' ? 'light' : 'dark';
-        // tweak cursor for hacker theme
-        if (arg === 'hacker'){
-          term.options.theme = { background:'#000000', foreground:'#c9d1d9', cursor:'#22c55e' };
-        } else if (arg === 'light'){
-          term.options.theme = { background:'#ffffff', foreground:'#111827', cursor:'#0ea5e9' };
-        } else {
-          term.options.theme = { background:'#000000', foreground:'#c9d1d9', cursor:'#22c55e' };
-        }
-        writeln(`Theme switched to ${arg}.`);
-      },
-      banner(arg){
-        if (!arg){ writeln(`banner is ${PROFILE.banner ? 'on' : 'off'}`); return; }
-        PROFILE.banner = arg === 'on';
-        writeln(`banner ${PROFILE.banner ? 'enabled' : 'disabled'}`);
-      },
-      neofetch(){
+      neofetch() {
         const ascii = [
-          '                __               ',
-          '   __  ______ _/ /_____  _____  ',
-          '  / / / / __ `/ __/ __ \\ / ___/  ',
-          ' / /_/ / /_/ / /_/ /_/ /(__  )   ',
-          ' \\__,_/\\__,_/\\__/\\____//____/    ',
+          ' _    _ _____  ______  _____ _     _ ',
+          '| |  | |  __ \\|  ____|/ ____| |   (_) ',
+          '| |  | | |__) | |__  | (___ | |__  _ ',
+          '| |  | |  _  /|  __|  \\___ \\|  _ \\| | ',
+          '| |__| | | \\ \\| |____ ____) | | | | | ',
+          ' \\____/|_|  \\_\\______|_____/|_| |_|_| '
         ];
-        ascii.forEach(l=>writeln(`\x1b[38;2;34;197;94m${l}\x1b[0m`));
+        ascii.forEach(l => writeln(`\x1b[36m${l}\x1b[0m`));
         writeln(`${PROFILE.username}@${PROFILE.hostname}`);
-        writeln(`OS: TermX (web)`);
-        writeln(`Shell: mocksh`);
-        writeln(`Projects: ${PROFILE.projects.length}`);
-      },
-      date(){ writeln(new Date().toString()); }
+      }
     };
 
-    // Input handling
-    function handleLine(raw){
-      const line = raw.trim();
-      if (!line){ return; }
-      history.push(line); histIndex = history.length;
-      const parts = line.split(/\s+/);
-      const cmd = parts[0];
-      const args = parts.slice(1);
-      const fn = handlers[cmd];
-      if (!fn){ writeln(`${cmd}: command not found`); return; }
-      try {
-        fn.apply(null, args);
-      } catch (e) {
-        writeln(`Error: ${e.message || e}`);
-      }
-    }
-
-    // Key events
     term.write(promptStr());
+
     term.onKey(({ key, domEvent }) => {
       const kc = domEvent.keyCode;
-      // Enter
-      if (kc === 13){
+
+      if (kc === 13) { // Enter
         writeln('');
-        handleLine(input);
+        if (input.trim()) {
+          history.push(input);
+          histIndex = history.length;
+          const parts = input.trim().split(/\s+/);
+          const cmd = parts[0];
+          const args = parts.slice(1);
+          if (handlers[cmd]) {
+            handlers[cmd](...args);
+          } else {
+            writeln(`${cmd}: command not found`);
+          }
+        }
         input = '';
-        write(promptStr());
-        return;
+        term.write(promptStr());
       }
-      // Backspace
-      if (kc === 8){
-        if (input.length > 0){
-          // Erase char visually and from buffer
+      else if (kc === 8) { // Backspace
+        if (input.length > 0) {
           term.write('\b \b');
           input = input.slice(0, -1);
         }
-        return;
       }
-      // Ctrl+L (clear)
-      if (domEvent.ctrlKey && (domEvent.key === 'l' || domEvent.key === 'L')){
-        handlers.clear(); write(promptStr()+input); return;
+      else if (kc === 38) { // Up arrow
+        if (histIndex > 0) {
+          histIndex--;
+          const cmd = history[histIndex];
+          term.write(`\x1b[2K\r${promptStr()}${cmd}`);
+          input = cmd;
+        }
       }
-      // Ctrl+C (cancel line)
-      if (domEvent.ctrlKey && domEvent.key === 'c'){
-        writeln('^C'); input=''; write(promptStr()); return;
-      }
-      // History: Up/Down
-      if (kc === 38 || kc === 40){
-        if (!history.length) return;
-        if (kc === 38){ // up
-          histIndex = Math.max(0, histIndex - 1);
+      else if (kc === 40) { // Down arrow
+        if (histIndex < history.length - 1) {
+          histIndex++;
+          const cmd = history[histIndex];
+          term.write(`\x1b[2K\r${promptStr()}${cmd}`);
+          input = cmd;
         } else {
-          histIndex = Math.min(history.length, histIndex + 1);
+          histIndex = history.length;
+          term.write(`\x1b[2K\r${promptStr()}`);
+          input = '';
         }
-        // Clear current line
-        const curLen = input.length;
-        if (curLen){ term.write('\b \b'.repeat(curLen)); }
-        input = history[histIndex] || '';
-        write(input);
-        return;
       }
-      // Tab completion
-      if (kc === 9){
-        domEvent.preventDefault();
-        const tokens = input.split(/\s+/);
-        const current = tokens[tokens.length - 1] || '';
-        const matches = autocomplete(current);
-        if (matches.length === 1){
-          const add = matches[0].slice(current.length);
-          input += add;
-          write(add);
-        } else if (matches.length > 1){
-          writeln(''); writeln(matches.join('  ')); write(promptStr()+input);
-        }
-        return;
+      else {
+        input += key;
+        term.write(key);
       }
-      // Regular character
-      if (key && key.length === 1){ input += key; write(key); }
     });
-
-    // Startup banner
-    function showBanner(){
-      writeln(`Welcome to \x1b[38;2;34;197;94m${PROFILE.username}@${PROFILE.hostname}\x1b[0m`);
-      writeln('Type \x1b[1mhelp\x1b[0m to explore.');
-    }
-    if (PROFILE.banner){ writeln(''); showBanner(); }
   </script>
 </body>
 </html>
