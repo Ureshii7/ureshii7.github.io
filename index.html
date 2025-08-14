@@ -85,7 +85,7 @@
           '  \\/_____/   \\/_/ /_/   \\/_____/   \\/_____/   \\/_/\\/_/   \\/_/   \\/_/ '
         ];
         ascii.forEach(l => writeln(`\x1b[36m${l}\x1b[0m`));
-        // writeln(`${PROFILE.username}@${PROFILE.hostname}`);
+        writeln(`${PROFILE.username}@${PROFILE.hostname}\x1b[0m`);
       }
     };
 
