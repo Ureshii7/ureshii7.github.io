@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>My Portfolio Terminal</title>
+  <link rel="stylesheet" href="https://unpkg.com/xterm/css/xterm.css" />
+  <style>
+    body {
+      background-color: black;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #terminal {
+      width: 80%;
+      height: 80%;
+    }
+  </style>
+</head>
+<body>
+  <div id="terminal"></div>
+
+  <script src="https://unpkg.com/xterm/lib/xterm.js"></script>
+  <script>
+    const term = new Terminal({ cursorBlink: true });
+    term.open(document.getElementById('terminal'));
+
+    function typeLine(line, delay = 50) {
+      return new Promise(resolve => {
+        let i = 0;
+        let interval = setInterval(() => {
+          term.write(line[i++] || '');
+          if (i > line.length) {
+            clearInterval(interval);
+            term.write('\r\n');
+            resolve();
+          }
+        }, delay);
+      });
+    }
+
+    async function runDemo() {
+      await typeLine("harshit@portfolio:~$ hello");
+      await typeLine("Hello, visitor! Welcome to my portfolio.");
+      await typeLine("harshit@portfolio:~$ ls projects");
+      await typeLine("project1  project2  project3");
+      await typeLine("harshit@portfolio:~$ cat about.txt");
+      await typeLine("I am a passionate developer who loves building cool stuff.");
+    }
+
+    runDemo();
+  </script>
+</body>
+</html>
