@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>My Portfolio Terminal</title>
+  <title>Harshit’s Terminal Portfolio</title>
   <link rel="stylesheet" href="https://unpkg.com/xterm/css/xterm.css" />
   <style>
     body {
@@ -17,6 +17,10 @@
       width: 80%;
       height: 80%;
     }
+    a {
+      color: lightgreen;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
@@ -27,30 +31,70 @@
     const term = new Terminal({ cursorBlink: true });
     term.open(document.getElementById('terminal'));
 
-    function typeLine(line, delay = 50) {
-      return new Promise(resolve => {
-        let i = 0;
-        let interval = setInterval(() => {
-          term.write(line[i++] || '');
-          if (i > line.length) {
-            clearInterval(interval);
-            term.write('\r\n');
-            resolve();
+    const prompt = () => {
+      term.write('\r\n$ ');
+    };
+
+    const commands = {
+      help: () => {
+        term.writeln("Available commands:");
+        term.writeln("  about      - About me");
+        term.writeln("  projects   - View my projects");
+        term.writeln("  contact    - Contact info");
+        term.writeln("  clear      - Clear the terminal");
+        term.writeln("  help       - Show this help menu");
+      },
+      about: () => {
+        term.writeln("Hi, I'm Harshit — a developer who loves building creative projects!");
+      },
+      projects: () => {
+        term.writeln("My Projects:");
+        term.writeln("  1. <a href='https://github.com/yourusername/project1' target='_blank'>Project One</a>");
+        term.writeln("  2. <a href='https://github.com/yourusername/project2' target='_blank'>Project Two</a>");
+      },
+      contact: () => {
+        term.writeln("Email: harshit@example.com");
+        term.writeln("GitHub: <a href='https://github.com/yourusername' target='_blank'>github.com/yourusername</a>");
+      },
+      clear: () => {
+        term.clear();
+      }
+    };
+
+    let currentInput = '';
+
+    term.writeln("Welcome to Harshit's Terminal Portfolio!");
+    term.writeln("Type 'help' to see available commands.");
+    prompt();
+
+    term.onKey(e => {
+      const char = e.key;
+      const keyCode = e.domEvent.keyCode;
+
+      if (keyCode === 13) { // Enter
+        const command = currentInput.trim();
+        term.writeln('');
+        if (command.length > 0) {
+          if (commands[command]) {
+            commands[command]();
+          } else {
+            term.writeln(`Command not found: ${command}`);
           }
-        }, delay);
-      });
-    }
-
-    async function runDemo() {
-      await typeLine("harshit@portfolio:~$ hello");
-      await typeLine("Hello, visitor! Welcome to my portfolio.");
-      await typeLine("harshit@portfolio:~$ ls projects");
-      await typeLine("project1  project2  project3");
-      await typeLine("harshit@portfolio:~$ cat about.txt");
-      await typeLine("I am a passionate developer who loves building cool stuff.");
-    }
-
-    runDemo();
+        }
+        currentInput = '';
+        prompt();
+      } 
+      else if (keyCode === 8) { // Backspace
+        if (currentInput.length > 0) {
+          term.write('\b \b');
+          currentInput = currentInput.slice(0, -1);
+        }
+      } 
+      else {
+        currentInput += char;
+        term.write(char);
+      }
+    });
   </script>
 </body>
 </html>
